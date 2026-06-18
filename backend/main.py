@@ -18,6 +18,16 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "admin123")
 
 
+@app.get("/")
+def read_root():
+    return {"status": "ok", "message": "Ecom Competitor Analyzer API"}
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+
 class AnalyzeRequest(BaseModel):
     product: str
     category: str
