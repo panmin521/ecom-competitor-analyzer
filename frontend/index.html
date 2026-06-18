@@ -5,13 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Competitor Analyzer</title>
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-MZ8BT4W3YD"></script>
-  <script>
+  <!-- Google tag (gtag.js) - Enhanced Implementation -->
+  <script id="gtag-init">
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-MZ8BT4W3YD');
+    window.gtag = function(){dataLayer.push(arguments);}
+    window.gtag('consent', 'default', {
+      'ad_storage': 'denied',
+      'analytics_storage': 'denied'
+    });
+    window.gtag('js', new Date());
+    window.gtag('config', 'G-MZ8BT4W3YD', {
+      'anonymize_ip': true,
+      'allow_ad_personalization_signals': false,
+      'send_page_view': true
+    });
+  </script>
+  <script>
+    (function() {
+      const GA_ID = 'G-MZ8BT4W3YD';
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+      
+      script.onload = function() {
+        console.log('✅ GA loaded successfully');
+      };
+      
+      script.onerror = function() {
+        console.warn('⚠️ GA failed to load (network issue, analytics disabled)');
+        window.gtag = function() {
+          console.log('[GA disabled]', arguments);
+        };
+      };
+      
+      document.head.appendChild(script);
+    })();
   </script>
 
 </head>

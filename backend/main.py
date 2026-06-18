@@ -67,6 +67,7 @@ async def analyze(req: AnalyzeRequest):
 
     result = await asyncio.to_thread(run, req.product, req.category)
     save_analysis(req.session_id, req.product, req.category, result["competitors"], result["report"])
+    print(f"[ANALYZE] {req.product} | {req.category} | competitors={len(result['competitors'])} | session={req.session_id[:8]}", flush=True)
     return {**result, "remaining": remaining}
 
 

@@ -169,6 +169,7 @@ export default function App() {
 
   async function handleAnalyze() {
     if (!product.trim() || !category.trim()) return;
+    if (window.gtag) window.gtag("event", "analysis_started", { product, category });
     if (remaining !== null && remaining <= 1 && remaining > 0) {
       const go = window.confirm(`You have ${remaining} free analysis left.\nUpgrade to Pro ($19/mo) for 50/month.\n\nContinue?`);
       if (!go) return;
@@ -188,9 +189,11 @@ export default function App() {
       setReport(data.report);
       setRemaining(data.remaining);
       setStatus("done");
+      if (window.gtag) window.gtag("event", "analysis_completed", { product, category });
     } catch {
       clearTimeout(t1); clearTimeout(t2);
       setStatus("error");
+      if (window.gtag) window.gtag("event", "analysis_failed", { product, category });
     }
   }
 
@@ -199,6 +202,7 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     Object.assign(document.createElement("a"), { href: url, download: `${product.replace(/\s+/g, "-")}-analysis.md` }).click();
     URL.revokeObjectURL(url);
+    if (window.gtag) window.gtag("event", "report_downloaded", { product });
   }
 
   return (
@@ -209,7 +213,7 @@ export default function App() {
           <div style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(99,179,237,0.12)", border: "1px solid rgba(99,179,237,0.25)", borderRadius: 20, padding: "0.3rem 0.9rem", fontSize: "0.75rem", letterSpacing: "0.1em", color: "#63b3ed", marginBottom: "1.25rem", textTransform: "uppercase" }}>
             <TrendingUp size={12} /> AI Market Intelligence
           </div>
-          <h1 style={{ fontSize: "clamp(2rem, 5vw, 3rem)", fontWeight: 800, margin: "0 0 0.75rem", letterSpacing: "-0.03em", lineHeight: 1.15, background: "linear-gradient(135deg, #fff 0%, #63b3ed 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          <h1 style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)", fontWeight: 900, margin: "0 0 0.75rem", letterSpacing: "-0.02em", lineHeight: 1.1, background: "linear-gradient(135deg, #ffffff 0%, #63b3ed 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             Competitor Analyzer
           </h1>
           <p style={{ color: "#94a3b8", fontSize: "1.1rem", margin: "0 0 2rem", lineHeight: 1.6 }}>
