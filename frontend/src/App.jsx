@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, Download, RotateCcw, Loader2, TrendingUp, Zap, ShieldCheck } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -33,6 +35,8 @@ export default function App() {
   const [report, setReport] = useState("");
   const [remaining, setRemaining] = useState(null);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const proceedRef = useRef(null);
 
   useEffect(() => {
     fetch(`${API}/usage/${getSessionId()}`)
@@ -44,31 +48,45 @@ export default function App() {
   async function handleAnalyze() {
     if (!product.trim() || !category.trim()) return;
     if (window.gtag) window.gtag("event", "analysis_started", { product, category });
+
+    const proceed = async () => {
+      setStatus("loading"); setStep(0); setUpgradeRequired(false);
+      const t1 = setTimeout(() => setStep(1), 5000);
+      const t2 = setTimeout(() => setStep(2), 12000);
+      try {
+        const res = await fetch(`${API}/analyze`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product, category, session_id: getSessionId() }),
+        });
+        clearTimeout(t1); clearTimeout(t2);
+        if (res.status === 402) { setUpgradeRequired(true); setStatus("idle"); return; }
+        const data = await res.json();
+        setReport(data.report);
+        setRemaining(data.remaining);
+        setStatus("done");
+        if (window.gtag) window.gtag("event", "analysis_completed", { product, category });
+      } catch {
+        clearTimeout(t1); clearTimeout(t2);
+        setStatus("error");
+        if (window.gtag) window.gtag("event", "analysis_failed", { product, category });
+      }
+    };
+
     if (remaining !== null && remaining <= 1 && remaining > 0) {
-      const go = window.confirm(`You have ${remaining} free analysis left.\nUpgrade to Pro ($19/mo) for 50/month.\n\nContinue?`);
-      if (!go) return;
+      proceedRef.current = proceed;
+      setConfirmOpen(true);
+      return;
     }
-    setStatus("loading"); setStep(0); setUpgradeRequired(false);
-    const t1 = setTimeout(() => setStep(1), 5000);
-    const t2 = setTimeout(() => setStep(2), 12000);
-    try {
-      const res = await fetch(`${API}/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product, category, session_id: getSessionId() }),
-      });
-      clearTimeout(t1); clearTimeout(t2);
-      if (res.status === 402) { setUpgradeRequired(true); setStatus("idle"); return; }
-      const data = await res.json();
-      setReport(data.report);
-      setRemaining(data.remaining);
-      setStatus("done");
-      if (window.gtag) window.gtag("event", "analysis_completed", { product, category });
-    } catch {
-      clearTimeout(t1); clearTimeout(t2);
-      setStatus("error");
-      if (window.gtag) window.gtag("event", "analysis_failed", { product, category });
-    }
+
+    await proceed();
+  }
+
+  function handleConfirmContinue() {
+    setConfirmOpen(false);
+    const fn = proceedRef.current;
+    proceedRef.current = null;
+    if (fn) fn();
   }
 
   function handleDownload() {
@@ -137,16 +155,18 @@ export default function App() {
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
                 <label style={labelStyle}>Product Name</label>
-                <input placeholder="e.g. Wireless Earbuds" value={product}
+                <Input placeholder="e.g. Wireless Earbuds" value={product}
                   onChange={(e) => setProduct(e.target.value)}
-                  disabled={status === "loading"} style={inputStyle} />
+                  disabled={status === "loading"}
+                  className="h-12 text-base border-slate-600/50 bg-slate-800/30 placeholder:text-slate-400 focus-visible:border-blue-500/70 focus-visible:ring-blue-500/30" />
               </div>
               <div>
                 <label style={labelStyle}>Category</label>
-                <input placeholder="e.g. Consumer Electronics" value={category}
+                <Input placeholder="e.g. Consumer Electronics" value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   disabled={status === "loading"}
-                  onKeyDown={(e) => e.key === "Enter" && handleAnalyze()} style={inputStyle} />
+                  onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
+                  className="h-12 text-base border-slate-600/50 bg-slate-800/30 placeholder:text-slate-400 focus-visible:border-blue-500/70 focus-visible:ring-blue-500/30" />
               </div>
               <Button onClick={handleAnalyze}
                 disabled={status === "loading" || !product.trim() || !category.trim()}
@@ -218,6 +238,24 @@ export default function App() {
           Powered by DeepSeek AI + Tavily · Built for cross-border sellers
         </p>
       </footer>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Only {remaining} free analysis left</DialogTitle>
+            <DialogDescription>
+              You have {remaining} free analysis left.
+              Upgrade to Pro ($19/mo) for 50/month.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleConfirmContinue}>Continue</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
