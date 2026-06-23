@@ -3,6 +3,7 @@ import { Search, Download, RotateCcw, Loader2, TrendingUp, Zap, ShieldCheck } fr
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -92,12 +93,14 @@ export default function App() {
           <p style={{ color: "#94a3b8", fontSize: "1.1rem", margin: "0 0 2rem", lineHeight: 1.6 }}>
             5 competitors · Strategic report in 60 seconds
           </p>
-          <div style={{ display: "flex", justifyContent: "center", gap: "2.5rem", flexWrap: "wrap" }}>
+          <div className="flex justify-center gap-3 flex-wrap mt-1">
             {STATS.map(({ value, label }) => (
-              <div key={label} style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "2rem", fontWeight: 800, color: "#63b3ed", lineHeight: 1 }}>{value}</div>
-                <div style={{ fontSize: "0.78rem", color: "#64748b", marginTop: "0.3rem", letterSpacing: "0.05em" }}>{label.toUpperCase()}</div>
-              </div>
+              <Card key={label} size="sm" className="bg-blue-500/5 border-blue-500/20 px-6 py-3 hover:bg-blue-500/10 hover:border-blue-500/40 transition-all duration-200">
+                <div className="text-center">
+                  <div className="text-2xl font-extrabold text-blue-400 leading-none">{value}</div>
+                  <div className="text-xs text-slate-500 mt-1.5 tracking-wider uppercase">{label}</div>
+                </div>
+              </Card>
             ))}
           </div>
           {remaining !== null && (
