@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search, Download, RotateCcw, Loader2, TrendingUp, Zap, ShieldCheck } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Button } from "@/components/ui/button";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -144,17 +145,14 @@ export default function App() {
                   disabled={status === "loading"}
                   onKeyDown={(e) => e.key === "Enter" && handleAnalyze()} style={inputStyle} />
               </div>
-              <button onClick={handleAnalyze}
+              <Button onClick={handleAnalyze}
                 disabled={status === "loading" || !product.trim() || !category.trim()}
-                style={{ marginTop: "0.5rem", padding: "0.9rem", fontSize: "1rem", fontWeight: 700,
-                  background: status === "loading" || !product.trim() || !category.trim() ? "rgba(99,179,237,0.3)" : "linear-gradient(135deg, #2563eb, #1d4ed8)",
-                  color: "#fff", border: "none", borderRadius: 10, cursor: status === "loading" ? "not-allowed" : "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                  boxShadow: "0 4px 15px rgba(37,99,235,0.4)", transition: "opacity 0.2s" }}>
+                size="lg"
+                className="!text-white !bg-linear-to-r !from-blue-500 !to-blue-700 hover:!from-blue-600 hover:!to-blue-800 shadow-lg shadow-blue-500/40 hover:shadow-2xl hover:shadow-blue-500/70 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 mt-2 w-full h-12 text-base font-bold">
                 {status === "loading"
-                  ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> Analyzing...</>
-                  : <><Search size={18} /> Analyze Competitors</>}
-              </button>
+                  ? <><Loader2 className="animate-spin" /> Analyzing...</>
+                  : <><Search /> Analyze Competitors</>}
+              </Button>
             </div>
 
             {status === "loading" && (
